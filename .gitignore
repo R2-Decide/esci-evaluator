@@ -169,3 +169,10 @@ cython_debug/
 
 # PyPI configuration file
 .pypirc
+
+# esci-s
+esci-s/en_esci.json
+esci-s/esci.json
+
+esci-data
+src/output
