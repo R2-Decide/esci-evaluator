@@ -171,8 +171,11 @@ cython_debug/
 .pypirc
 
 # esci-s
+esci-s/esci.json.zst
 esci-s/en_esci.json
 esci-s/esci.json
 
 esci-data
-src/output
+output
+
+.DS_Store

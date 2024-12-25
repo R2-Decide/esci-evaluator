@@ -1,0 +1,29 @@
+[tool.poetry]
+name = "anubis"
+version = "0.1.0"
+description = "Evaluation dataset for eCommerce search solutions"
+authors = ["Yogesh Patil <yogesh@r2decide.com>"]
+readme = "README.md"
+package-mode = false
+
+[tool.poetry.dependencies]
+python = "^3.12"
+certifi = "2024.12.14"
+charset-normalizer = "3.4.1"
+idna = "3.10"
+requests = "2.32.3"
+tqdm = "4.67.1"
+urllib3 = "2.3.0"
+types-tqdm = "^4.67.0.20241221"
+pandas-stubs = "^2.2.3.241126"
+pandas = "^2.2.3"
+asyncio = "^3.4.3"
+aiohttp = "^3.11.11"
+aiofiles = "^24.1.0"
+types-aiofiles = "^24.1.0.20241221"
+pyarrow = "^18.1.0"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
