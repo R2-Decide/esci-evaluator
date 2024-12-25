@@ -1,9 +1,12 @@
+"""
+This script is used to calculate the distribution of products in the ESCI dataset.
+"""
+
 import json
 
 stats = {}
-for i in open("esci-s/en_esci.json"):
-    i = json.loads(i)
-    if category := i.get("category"):
+for i in open("esci-s/en_esci.json", encoding="utf-8"):
+    if category := json.loads(i).get("category"):
         top_category = category[0]
         if top_category not in stats:
             stats[top_category] = 0

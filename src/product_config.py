@@ -1,7 +1,11 @@
+"""Product configuration module"""
+
 from enum import Enum
 
 
 class ProductCategory(Enum):
+    """Product categories"""
+
     CLOTHING_SHOES_JEWELRY = "Clothing, Shoes & Jewelry"
     HOME_KITCHEN = "Home & Kitchen"
     SPORTS_OUTDOORS = "Sports & Outdoors"
