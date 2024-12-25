@@ -41,18 +41,17 @@ brew install zstd
 ## Download from https://github.com/facebook/zstd/releases and add to PATH
 
 # Decompress the dataset
-cd esci-s
-zstd -d esci.json.zst
+zstd -d esci-s/esci.json.zst
 
 # Filter for US locale and create en_esci.json
-cat esci.json | grep '"locale":"us"' | tee en_esci.json
+grep '"locale":"us"' esci.json > en_esci.json
 ```
 
 3. Verify the product distribution:
 
 ```bash
 # Run the distribution script
-python product_distribution.py
+python3 esci-s/product_distribution.py
 
 # Output should show category distribution similar to:
 {
@@ -67,51 +66,50 @@ python product_distribution.py
 
 ```bash
 # Create and activate virtual environment
-cd ../src
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
+# Install dependencies and create the virtual environment using Poetry
+poetry install
 
-# Install requirements
-pip install -r requirements.txt
+# Activate the virtual environment (if needed, optional step)
+poetry shell
 ```
 
 ## Usage
 
-1. Validate product images for a category:
+1. Fetch, validate, and store products for a category:
 
 ```bash
-python validate-product-images.py ELECTRONICS
+python3 src/fetch_products.py ELECTRONICS
 ```
 
 2. Fetch queries for a category:
 
 ```bash
-python fetch-category-queries.py ELECTRONICS --labels E S --locale us
+python3 src/fetch_queries.py ELECTRONICS --labels E S --locale us
 ```
 
-### Available Options:
+### Available Options
 
 - `--locale`: Product locale (us/es/jp), default: "us"
 - `--labels`: ESCI labels to include (E/S/C/I), default: all labels
 
 ## Output
 
-The scripts will create an `output` directory containing:
+The scripts will create a `output` directory containing:
 
 - `{category}_asins.json`: List of valid ASINs for the category
 - `{category}_{locale}_{labels}_queries.json`: Queries and their associated products
 
 ## Directory Structure
 
-```
+```bash
 anubis/
-├── esci-data/           # Cloned ESCI repository
-├── esci-s/              # ESCI dataset files
-│   ├── esci.json       # Decompressed dataset
-│   ├── en_esci.json    # US locale dataset
+├── esci-data/                      # Cloned ESCI repository
+├── esci-s/                         # ESCI dataset files
+│   ├── esci.json                   # Decompressed dataset
+│   ├── en_esci.json                # US locale dataset
 │   └── product_distribution.py
-├── src/                 # Source code
+├── src/                            # Source code
 │   ├── validate-product-images.py
 │   └── fetch-category-queries.py
-└── output/              # Generated files
+└── output/                         # Generated files
 ```
