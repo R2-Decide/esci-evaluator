@@ -51,7 +51,7 @@ grep '"locale":"us"' esci.json > en_esci.json
 
 ```bash
 # Run the distribution script
-python3 esci-s/product_distribution.py
+python3 src/product_distribution.py
 
 # Output should show category distribution similar to:
 {
