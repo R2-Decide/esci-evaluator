@@ -42,9 +42,6 @@ brew install zstd
 
 # Decompress the dataset
 zstd -d esci-s/esci.json.zst
-
-# Filter for US locale and create en_esci.json
-grep '"locale":"us"' esci.json > en_esci.json
 ```
 
 3. Verify the product distribution:
@@ -77,11 +74,13 @@ poetry shell
 
 1. Fetch, validate, and store products for a category:
 
+> *Takes about 3-5 minutes to complete*
+
 ```bash
-python3 src/fetch_products.py ELECTRONICS
+python3 src/fetch_products.py ELECTRONICS --locale us
 ```
 
-2. Fetch queries for a category:
+1. Fetch queries for a category:
 
 ```bash
 python3 src/fetch_queries.py ELECTRONICS --labels E S --locale us
