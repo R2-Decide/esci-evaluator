@@ -7,39 +7,35 @@ import asyncio
 import json
 import logging
 import os
-from typing import Dict, List, Tuple
+from typing import Dict, Iterator, List, Tuple
 
 import aiohttp
 from aiohttp import ClientError
-from tqdm.asyncio import tqdm
+from tqdm import tqdm
 
 from product_config import ProductCategory
-from tqdm import tqdm as tqdm_sync
 
 logger = logging.getLogger(__name__)
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(
+    level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
+)
 
 
 def append_to_json(file_path: str, data: List[Dict]) -> None:
-    """Append data to a JSON file"""
-    if os.path.exists(file_path):
-        with open(file_path, "r+", encoding="utf-8") as f:
-            existing_data = json.load(f)
-            existing_data.extend(data)
-            f.seek(0)
-            json.dump(existing_data, f, indent=2)
-    else:
-        with open(file_path, "w", encoding="utf-8") as f:
-            json.dump(data, f, indent=2)
+    """Append data to a JSON file as JSON lines"""
+    with open(file_path, "a", encoding="utf-8") as f:
+        for item in data:
+            f.write(json.dumps(item) + "\n")
 
 
-def load_from_json(file_path: str) -> List[Dict]:
+def load_from_json(file_path: str) -> Iterator[Dict]:
     """Load data from a JSON file"""
     if not os.path.exists(file_path):
         logger.error("Cannot find %s", file_path)
-        return []
+        return
     with open(file_path, "r", encoding="utf-8") as f:
-        return [json.loads(line) for line in tqdm_sync(f, desc="Loading JSON data")]
+        for line in f:
+            yield json.loads(line)
 
 
 async def validate_image_url(
@@ -80,60 +76,58 @@ async def validate_image_url(
     return False, {}
 
 
-async def process_category(category: str, locale: str) -> Tuple[List[Dict], List[str]]:
-    """Process products for a given category and return valid products and ASINs"""
-    valid_asins = []
+async def process_category(category: str, locale: str) -> int:
+    """Process products for a given category and return count of valid products"""
+    valid_count = 0
 
     logger.info("Loading products for category: %s...", category)
     json_path = "esci-s/esci.json"
-    products = load_from_json(json_path)
-    products = [
-        product
-        for product in tqdm(products, desc="Filtering products by category")
-        if product.get("category")
-        and product["category"][0] == category
-        and product.get("locale") == locale
-    ]
 
-    logger.info("Found %d products in category %s", len(products), category)
-
-    if not products:
-        logger.warning("No products found for category '%s'", category)
-        logger.info("Available categories in the first few products:")
-        sample_categories = set(
-            product["category"][0] for product in products if product.get("category")
-        )
-        logger.info("\n".join(sorted(sample_categories)))
-        return [], []
-
-    # Validate image URLs with progress bar
-    successful = []
-
+    product_file = (
+        f"output/{category.lower().replace(' & ', '_').replace(' ', '_')}.json"
+    )
+    valid_asins_file = f"output/valid_asins_{category.lower().replace(' & ', '_').replace(' ', '_')}.json"
     async with aiohttp.ClientSession() as session:
-        tasks = [validate_image_url(session, product) for product in products]
-        for task in tqdm.as_completed(
-            tasks, desc="Validating image URLs", total=len(products)
-        ):
-            success, product_info = await task
-            if success:
-                successful.append(product_info)
-                valid_asins.append(product_info["asin"])
+        tasks = []
+        batch_size = 500
+        batch = []
+        asins_batch = []
+        semaphore = asyncio.Semaphore(1000)  # Control concurrency
 
-    return successful, valid_asins
+        async def sem_validate(product):
+            async with semaphore:
+                return await validate_image_url(session, product)
 
+        for product in tqdm(load_from_json(json_path), desc="Processing products"):
+            if (
+                product.get("category")
+                and product["category"][0] == category
+                and product.get("locale") == locale
+            ):
+                tasks.append(asyncio.create_task(sem_validate(product)))
+                if len(tasks) >= batch_size:
+                    results = await asyncio.gather(*tasks)
+                    for success, product_info in results:
+                        if success:
+                            batch.append(product_info)
+                            asins_batch.append(product_info["asin"])
+                            valid_count += 1
+                    append_to_json(product_file, batch)
+                    append_to_json(valid_asins_file, asins_batch)
+                    batch = []
+                    asins_batch = []
+                    tasks = []
+        if tasks:
+            results = await asyncio.gather(*tasks)
+            for success, product_info in results:
+                if success:
+                    batch.append(product_info)
+                    asins_batch.append(product_info["asin"])
+                    valid_count += 1
+            append_to_json(product_file, batch)
+            append_to_json(valid_asins_file, asins_batch)
 
-def save_results(category: str, products: List[Dict], asins: List[str]) -> None:
-    """Save results to JSON files"""
-    os.makedirs("output", exist_ok=True)
-
-    category_filename = category.lower().replace(" & ", "_").replace(" ", "_")
-
-    product_file = f"output/{category_filename}.json"
-    append_to_json(product_file, products)
-
-    logger.info("Results saved:")
-    logger.info("- Product data: %s", product_file)
-    logger.info("Total valid products/ASINs: %d", len(asins))
+    return valid_count
 
 
 async def main():
@@ -159,12 +153,10 @@ async def main():
 
     category_value = ProductCategory[args.category].value
 
-    valid_products, valid_asins = await process_category(category_value, args.locale)
+    valid_products = await process_category(category_value, args.locale)
 
     logger.info("Validation complete!")
-    logger.info("Successfully validated products: %d", len(valid_products))
-
-    save_results(args.category, valid_products, valid_asins)
+    logger.info("Successfully validated products: %d", valid_products)
 
 
 if __name__ == "__main__":
