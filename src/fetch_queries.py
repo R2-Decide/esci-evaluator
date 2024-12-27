@@ -10,10 +10,11 @@ import os
 
 import aiofiles
 import pandas as pd
-from tqdm.asyncio import tqdm
+from tqdm import tqdm
 
 from product_config import ProductCategory
 
+logger = logging.getLogger(__name__)
 logging.basicConfig(
     level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
 )
@@ -21,32 +22,34 @@ logging.basicConfig(
 
 async def load_valid_asins(category: str) -> list:
     """Load valid ASINs from the output directory"""
-    category_filename = category.lower().replace(" & ", "_").replace(" ", "_")
-    asins_file = f"output/{category_filename}_asins.json"
+    valid_asins_file = f"output/valid_asins_{category.lower().replace(' & ', '_').replace(' ', '_')}.json"
 
+    asins = []
     try:
-        async with aiofiles.open(asins_file, "r", encoding="utf-8") as f:
-            return json.loads(await f.read())
+        async with aiofiles.open(valid_asins_file, "r", encoding="utf-8") as f:
+            async for line in f:
+                asins.append(json.loads(line))
     except FileNotFoundError:
-        logging.error("No valid ASINs file found at %s", asins_file)
-        logging.error("Please run validate-product-images.py first!")
-        return []
+        logger.error("No valid ASINs file found at %s", valid_asins_file)
+        logger.error("Please run fetch_products.py first!")
+
+    return asins
 
 
 async def fetch_valid_queries(valid_asins: list, locale: str, labels: list) -> list:
     """Fetch queries related to valid ASINs for the given category"""
     base_path = "esci-data/shopping_queries_dataset"
 
-    logging.info("Reading parquet files...")
+    logger.info("Reading parquet files...")
     try:
         df_examples = pd.read_parquet(
             f"{base_path}/shopping_queries_dataset_examples.parquet"
         )
     except Exception as e:
-        logging.error("Error reading parquet files: %s", e)
+        logger.error("Error reading parquet files: %s", e)
         return []
 
-    logging.info("Filtering products...")
+    logger.info("Filtering products...")
     # Filter products by valid ASINs, locale and labels
     df_examples_filtered = df_examples[
         (df_examples["product_id"].isin(valid_asins))
@@ -56,7 +59,7 @@ async def fetch_valid_queries(valid_asins: list, locale: str, labels: list) -> l
         & (df_examples["small_version"] == 1)
     ]
 
-    logging.info("Grouping queries...")
+    logger.info("Grouping queries...")
     # Group by query to get all products for each query
     query_groups = (
         df_examples_filtered.groupby("query_id")
@@ -104,9 +107,9 @@ async def save_results(
     async with aiofiles.open(queries_file, "w", encoding="utf-8") as f:
         await f.write(json.dumps(queries_list, indent=2))
 
-    logging.info("\nResults saved:")
-    logging.info("- Queries data: %s", queries_file)
-    logging.info("Total queries found: %d", len(queries_list))
+    logger.info("\nResults saved:")
+    logger.info("- Queries data: %s", queries_file)
+    logger.info("Total queries found: %d", len(queries_list))
 
 
 async def main():
@@ -144,15 +147,15 @@ async def main():
     category_value = ProductCategory[args.category].value
 
     # Load valid ASINs
-    logging.info("Loading valid ASINs for category: %s", category_value)
+    logger.info("Loading valid ASINs for category: %s", category_value)
     valid_asins = await load_valid_asins(category_value)
 
     if not valid_asins:
         return
 
-    logging.info("\nFound %d valid ASINs", len(valid_asins))
-    logging.info("Fetching associated queries for locale: %s", args.locale)
-    logging.info("Including labels: %s", ", ".join(args.labels))
+    logger.info("\nFound %d valid ASINs", len(valid_asins))
+    logger.info("Fetching associated queries for locale: %s", args.locale)
+    logger.info("Including labels: %s", ", ".join(args.labels))
 
     # Fetch and save queries
     queries_list = await fetch_valid_queries(valid_asins, args.locale, args.labels)
