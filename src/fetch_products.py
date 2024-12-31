@@ -13,7 +13,7 @@ import aiohttp
 from aiohttp import ClientError
 from tqdm import tqdm
 
-from product_config import ProductCategory
+from src.product_config import ProductCategory
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(

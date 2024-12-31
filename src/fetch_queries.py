@@ -12,7 +12,7 @@ import aiofiles
 import pandas as pd
 from tqdm import tqdm
 
-from product_config import ProductCategory
+from src.product_config import ProductCategory
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(
@@ -62,7 +62,7 @@ async def fetch_valid_queries(valid_asins: list, locale: str, labels: list) -> l
     logger.info("Grouping queries...")
     # Group by query to get all products for each query
     query_groups = (
-        df_examples_filtered.groupby("query_id")
+        df_examples_filtered.groupby("query_id", sort=False)
         .agg(
             {
                 "query": "first",  # Get the query text
