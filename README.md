@@ -1,4 +1,4 @@
-# anubis
+# esci-batch-evaluation-dataset
 
 Evaluation dataset for eCommerce search solutions. This repository processes and prepares the ESCI dataset from Amazon Science for eCommerce search evaluation.
 
@@ -14,8 +14,8 @@ Evaluation dataset for eCommerce search solutions. This repository processes and
 
 ```bash
 # Clone this repository
-git clone https://github.com/your-username/anubis.git
-cd anubis
+git clone https://github.com/your-username/esci-batch-evaluation-dataset.git
+cd esci-batch-evaluation-dataset
 
 # Clone ESCI data repository
 git clone https://github.com/amazon-science/esci-data.git
@@ -101,7 +101,7 @@ The scripts will create a `output` directory containing:
 ## Directory Structure
 
 ```bash
-anubis/
+esci-batch-evaluation-dataset/
 ├── esci-data/                      # Cloned ESCI repository
 ├── esci-s/                         # ESCI dataset files
 │   ├── esci.json                   # Decompressed dataset
