@@ -1,4 +1,4 @@
-# anubis
+# esci-evaluator
 
 Evaluation dataset for eCommerce search solutions. This repository processes and prepares the ESCI dataset from Amazon Science for eCommerce search evaluation.
 
@@ -14,8 +14,8 @@ Evaluation dataset for eCommerce search solutions. This repository processes and
 
 ```bash
 # Clone this repository
-git clone https://github.com/your-username/anubis.git
-cd anubis
+git clone https://github.com/your-username/esci-evaluator.git
+cd esci-evaluator
 
 # Clone ESCI data repository
 git clone https://github.com/amazon-science/esci-data.git
@@ -70,7 +70,7 @@ poetry install
 poetry shell
 ```
 
-## Usage
+## Create Dataset
 
 1. Fetch, validate, and store products for a category:
 
@@ -98,17 +98,40 @@ The scripts will create a `output` directory containing:
 - `{category}_asins.json`: List of valid ASINs for the category
 - `{category}_{locale}_{labels}_queries.json`: Queries and their associated products
 
-## Directory Structure
+## Load Products
 
-```bash
-anubis/
-├── esci-data/                      # Cloned ESCI repository
-├── esci-s/                         # ESCI dataset files
-│   ├── esci.json                   # Decompressed dataset
-│   ├── en_esci.json                # US locale dataset
-│   └── product_distribution.py
-├── src/                            # Source code
-│   ├── validate-product-images.py
-│   └── fetch-category-queries.py
-└── output/                         # Generated files
+Load product data into your search platform of choice:
+
+```zsh
+# Load to Algolia
+poetry run python src/load/algolia.py --app-id YOUR_APP_ID --api-key YOUR_API_KEY --index-name YOUR_INDEX --products-file data/products.json
+
+# Load to Doofinder
+poetry run python src/load/doofinder.py --token YOUR_TOKEN --search-url YOUR_SEARCH_URL --management-url YOUR_MANAGEMENT_URL --hash-id YOUR_HASH_ID --index-name YOUR_INDEX --products-file data/products.json
+
+# Load to Shopify
+poetry run python src/load/shopify.py --shop YOUR_SHOP --token YOUR_TOKEN --products-file data/products.json
 ```
+
+## Run Benchmarks
+
+Run search queries against each platform:
+
+```zsh
+# Benchmark Algolia
+poetry run python src/search/algolia.py --app-id YOUR_APP_ID --api-key YOUR_API_KEY --index-name YOUR_INDEX --queries-file data/queries.json --output-file results/algolia_results.json
+
+# Benchmark Doofinder
+poetry run python src/search/doofinder.py --token YOUR_TOKEN --search-url YOUR_SEARCH_URL --hash-id YOUR_HASH_ID --queries-file data/queries.json --output-file results/doofinder_results.json
+
+# Benchmark Shopify
+poetry run python src/search/shopify.py --shop-url YOUR_SHOP_URL --access-token YOUR_ACCESS_TOKEN --queries-file data/queries.json --output-file results/shopify_results.json
+```
+
+## License
+
+This project is licensed under the terms of the MIT License.
+
+## Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
