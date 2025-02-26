@@ -5,7 +5,6 @@ Fetch, validate, and store products for a specific category
 import argparse
 import asyncio
 import json
-import logging
 import os
 from typing import Dict, Iterator, List, Tuple
 
@@ -13,12 +12,10 @@ import aiohttp
 from aiohttp import ClientError
 from tqdm import tqdm
 
-from src.product_config import ProductCategory
+from src.dataset.product_config import ProductCategory
+from src.logger import get_logger
 
-logger = logging.getLogger(__name__)
-logging.basicConfig(
-    level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
-)
+logger = get_logger(__name__)
 
 
 def append_to_json(file_path: str, data: List[Dict]) -> None:
