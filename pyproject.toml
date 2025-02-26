@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "anubis"
+name = "esci-evaluator"
 version = "0.1.0"
 description = "Evaluation dataset for eCommerce search solutions"
 authors = ["Yogesh Patil <yogesh@r2decide.com>"]
@@ -22,6 +22,9 @@ aiohttp = "^3.11.11"
 aiofiles = "^24.1.0"
 types-aiofiles = "^24.1.0.20241221"
 pyarrow = "^18.1.0"
+tenacity = "^9.0.0"
+algoliasearch = "^4.13.2"
+pydoof = "^4.2.0"
 
 
 [build-system]
