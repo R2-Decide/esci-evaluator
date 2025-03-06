@@ -15,4 +15,4 @@ with open("esci-s/esci.json", encoding="utf-8") as f:
 
 stats = dict(sorted(stats.items(), reverse=True, key=lambda x: x[1]))
 
-print(json.dumps(stats))
+print(json.dumps(stats, indent=4))

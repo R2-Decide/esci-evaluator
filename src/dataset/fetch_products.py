@@ -80,10 +80,8 @@ async def process_category(category: str, locale: str) -> int:
     logger.info("Loading products for category: %s...", category)
     json_path = "esci-s/esci.json"
 
-    product_file = (
-        f"output/{category.lower().replace(' & ', '_').replace(' ', '_')}.json"
-    )
-    valid_asins_file = f"output/valid_asins_{category.lower().replace(' & ', '_').replace(' ', '_')}.json"
+    product_file = f"data/{category.lower().replace(' & ', '_').replace(' ', '_')}.json"
+    valid_asins_file = f"data/valid_asins_{category.lower().replace(' & ', '_').replace(' ', '_')}.json"
     async with aiohttp.ClientSession() as session:
         tasks = []
         batch_size = 500

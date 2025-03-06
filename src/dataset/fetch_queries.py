@@ -18,8 +18,8 @@ logger = get_logger(__name__)
 
 
 async def load_valid_asins(category: str) -> list:
-    """Load valid ASINs from the output directory"""
-    valid_asins_file = f"output/valid_asins_{category.lower().replace(' & ', '_').replace(' ', '_')}.json"
+    """Load valid ASINs from the data directory"""
+    valid_asins_file = f"data/valid_asins_{category.lower().replace(' & ', '_').replace(' ', '_')}.json"
 
     asins = []
     try:
@@ -93,14 +93,14 @@ async def save_results(
     category: str, queries_list: list, locale: str, labels: list
 ) -> None:
     """Save the query results"""
-    os.makedirs("output", exist_ok=True)
+    os.makedirs("data", exist_ok=True)
 
     # Clean category name for filename
     category_filename = category.lower().replace(" & ", "_").replace(" ", "_")
     labels_str = "".join(sorted(labels))
 
     # Save queries with their products
-    queries_file = f"output/{category_filename}_{locale}_{labels_str}_queries.json"
+    queries_file = f"data/{category_filename}_{locale}_{labels_str}_queries.json"
     async with aiofiles.open(queries_file, "w", encoding="utf-8") as f:
         await f.write(json.dumps(queries_list, indent=2))
 
