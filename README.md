@@ -48,7 +48,7 @@ zstd -d esci-s/esci.json.zst
 
 ```bash
 # Run the distribution script
-python3 src/product_distribution.py
+python3 -m src.dataset.product_distribution
 
 # Output should show category distribution similar to:
 {
@@ -77,13 +77,13 @@ poetry shell
 > *Takes about 3-5 minutes to complete*
 
 ```bash
-python3 src/fetch_products.py ELECTRONICS --locale us
+python3 -m src.dataset.fetch_products ELECTRONICS --locale us
 ```
 
 1. Fetch queries for a category:
 
 ```bash
-python3 src/fetch_queries.py ELECTRONICS --labels E S --locale us
+python3 -m src.dataset.fetch_queries ELECTRONICS --labels E S --locale us
 ```
 
 ### Available Options
@@ -93,9 +93,10 @@ python3 src/fetch_queries.py ELECTRONICS --labels E S --locale us
 
 ## Output
 
-The scripts will create a `output` directory containing:
+The scripts will create a `data` directory containing:
 
-- `{category}_asins.json`: List of valid ASINs for the category
+- `{category}.json`: List of products for the category
+- `valid_asins_{category}.json`: List of valid ASINs for the category
 - `{category}_{locale}_{labels}_queries.json`: Queries and their associated products
 
 ## Load Products
@@ -126,6 +127,14 @@ poetry run python src/search/doofinder.py --token YOUR_TOKEN --search-url YOUR_S
 
 # Benchmark Shopify
 poetry run python src/search/shopify.py --shop-url YOUR_SHOP_URL --access-token YOUR_ACCESS_TOKEN --queries-file data/queries.json --output-file results/shopify_results.json
+```
+
+## Evaluate Results
+
+Evaluate the results using the provided evaluation script:
+
+```bash
+python3 -m src.evaluate.evaluate_search_results
 ```
 
 ## License
