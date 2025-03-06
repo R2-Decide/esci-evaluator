@@ -175,7 +175,7 @@ esci-data
 output
 
 .DS_Store
-data
+data/*
 !data/.gitkeep
-results
+results/*
 !results/.gitkeep
